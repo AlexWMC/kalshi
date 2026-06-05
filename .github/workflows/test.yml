@@ -1,0 +1,56 @@
+name: Run Pester Tests
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'KalshiPowerShell/**'
+      - 'KalshiPowerShell.Tests.ps1'
+      - '.github/workflows/test.yml'
+  pull_request:
+    paths:
+      - 'KalshiPowerShell/**'
+      - 'KalshiPowerShell.Tests.ps1'
+      - '.github/workflows/test.yml'
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Pester ${{ matrix.pwsh }} on ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        pwsh: ['7.4']
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install PowerShell
+        uses: actions/setup-powershell@v1
+        with:
+          pwsh-version: ${{ matrix.pwsh }}
+
+      - name: Install Pester
+        shell: pwsh
+        run: Install-Module Pester -Force -SkipPublisherCheck -Scope CurrentUser
+
+      - name: Show version info
+        shell: pwsh
+        run: |
+          Write-Host "PSVersion: $($PSVersionTable.PSVersion)"
+          Write-Host "Pester: $((Get-Module Pester -ListAvailable).Version)"
+          Write-Host "OS: $([Environment]::OSVersion)"
+
+      - name: Run tests
+        shell: pwsh
+        run: |
+          $modulePath = Join-Path $PSScriptRoot 'KalshiPowerShell'
+          Import-Module $modulePath -Force -ErrorAction Stop
+          $result = Invoke-Pester -Path ./KalshiPowerShell.Tests.ps1 -PassThru
+          if ($result.FailedCount -gt 0) {
+            throw "$($result.FailedCount) test(s) failed"
+          }
+          Write-Host "All $($result.PassedCount) tests passed" -ForegroundColor Green
