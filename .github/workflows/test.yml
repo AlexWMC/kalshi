@@ -8,10 +8,7 @@ on:
       - 'KalshiPowerShell.Tests.ps1'
       - '.github/workflows/test.yml'
   pull_request:
-    paths:
-      - 'KalshiPowerShell/**'
-      - 'KalshiPowerShell.Tests.ps1'
-      - '.github/workflows/test.yml'
+    branches: [main]
   workflow_dispatch:
 
 jobs:
