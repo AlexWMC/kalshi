@@ -25,11 +25,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install PowerShell
-        uses: actions/setup-powershell@v1
-        with:
-          pwsh-version: ${{ matrix.pwsh }}
-
       - name: Install Pester
         shell: pwsh
         run: Install-Module Pester -Force -SkipPublisherCheck -Scope CurrentUser
